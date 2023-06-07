@@ -4,6 +4,18 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Available Scripts
 
+In the project directory, you must install package first:
+
+### `npm install`
+
+Then In the project directory, add file .env:
+
+Copy this code to file .env
+
+```bash
+REACT_APP_BASE_URL=https://restcountries.com/
+```
+
 In the project directory, you can run:
 
 ### `npm start`
