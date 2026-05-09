@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BsArrowLeftShort } from 'react-icons/bs';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { getAllCallingCode, getAllCurrency } from '../redux/action';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -17,24 +16,30 @@ export default function Detail() {
   const { dataCallingCode } = useSelector((state) => state.callingCodeReducer);
   const { dataAllCurrency } = useSelector((state) => state.currencyReducer);
 
-  const country = location.state;
+  const hasCountryState = Boolean(location.state);
+  const country = location.state || {};
 
-  if (country === null) {
-    navigate('/');
-  }
+  const countryName = country.name?.common || 'Unknown country';
+  const callingCodeRoot = country.idd?.root?.replace('+', '') || '';
+  const suffixes = country.idd?.suffixes || [];
+  const suffix = suffixes.length === 1 && !['1', '7'].includes(callingCodeRoot) ? suffixes[0] : '';
+  const currencyCode = Object.keys(country.currencies || {})[0] || 'N/A';
 
   const detailCountry = {
-    name: country.name.common,
-    flag: { icon: country.flags.svg, alt: country.flags.alt },
-    spelling: country.altSpellings,
-    latitude: country.latlng[0],
-    longitude: country.latlng[1],
-    capital: country.capital[0],
-    region: country.region,
-    subRegion: country.subregion,
-    callingCode: country.idd.root.replace('+', ''),
-    suffixes: country.idd.suffixes.length === 1 ? country.idd.suffixes[0] : '',
-    currency: Object.keys(country.currencies)[0],
+    name: countryName,
+    flag: {
+      icon: country.flags?.svg || country.flags?.png || '',
+      alt: country.flags?.alt || `${countryName} flag`,
+    },
+    spelling: country.altSpellings || [],
+    latitude: country.latlng?.[0] ?? 'N/A',
+    longitude: country.latlng?.[1] ?? 'N/A',
+    capital: country.capital?.[0] || 'N/A',
+    region: country.region || 'N/A',
+    subRegion: country.subregion || 'N/A',
+    callingCode: callingCodeRoot,
+    suffixes: suffix,
+    currency: currencyCode,
   };
 
   const callingCodeDatas = {
@@ -47,26 +52,23 @@ export default function Detail() {
     country: dataAllCurrency,
   };
 
-  const fetchDataCallingCode = () => {
-    let callingCode = detailCountry.callingCode + '' + detailCountry.suffixes;
-    if (detailCountry.callingCode === 1 || detailCountry === 7) {
-      callingCode = detailCountry.callingCode;
+  const callingCodeQuery = `${detailCountry.callingCode}${detailCountry.suffixes}`;
+
+  useEffect(() => {
+    if (callingCodeQuery) {
+      dispatch(getAllCallingCode(Number(callingCodeQuery)));
     }
-    dispatch(getAllCallingCode(parseInt(callingCode)));
-  };
-
-  const fetchDataCurrency = () => {
-    let currency = detailCountry.currency;
-    dispatch(getAllCurrency(currency));
-  };
+  }, [callingCodeQuery, dispatch]);
 
   useEffect(() => {
-    fetchDataCallingCode();
-  }, []);
+    if (detailCountry.currency !== 'N/A') {
+      dispatch(getAllCurrency(detailCountry.currency));
+    }
+  }, [detailCountry.currency, dispatch]);
 
-  useEffect(() => {
-    fetchDataCurrency();
-  }, []);
+  if (!hasCountryState) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="px-5 my-4 md:px-24">
@@ -148,7 +150,7 @@ export default function Detail() {
                   {detailCountry.callingCode}
                   {detailCountry.suffixes}
                 </p>
-                <p className="text-xl font-medium ">
+                <div className="text-xl font-medium ">
                   <span
                     className="relative text-[#8362F2] underline cursor-pointer"
                     onMouseEnter={() => {
@@ -173,7 +175,7 @@ export default function Detail() {
                     </div>
                   )}
                   with this calling code
-                </p>
+                </div>
               </div>
             </div>
           </div>
@@ -182,7 +184,7 @@ export default function Detail() {
               <div className="space-y-3 ">
                 <p className="text-3xl font-medium ">Currency</p>
                 <p className="text-6xl font-semibold text-[#8362F2]">{detailCountry.currency}</p>
-                <p className="text-xl font-medium ">
+                <div className="text-xl font-medium ">
                   <span
                     className="relative text-[#8362F2] underline cursor-pointer"
                     onMouseEnter={() => {
@@ -207,7 +209,7 @@ export default function Detail() {
                     </div>
                   )}
                   with this currency
-                </p>
+                </div>
               </div>
             </div>
           </div>
