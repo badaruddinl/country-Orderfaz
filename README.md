@@ -4,7 +4,7 @@ Country Explorer is a React app for searching countries from the REST Countries 
 
 ## Tech Stack
 
-- React 18 with Create React App
+- React 18 with Vite
 - React Router
 - Redux and redux-thunk
 - Tailwind CSS
@@ -25,7 +25,7 @@ Create a local environment file from the example:
 cp .env.example .env
 ```
 
-The app falls back to `https://restcountries.com` when `REACT_APP_BASE_URL` is not set.
+The app falls back to `https://restcountries.com` when `VITE_BASE_URL` is not set.
 
 ## Scripts
 
@@ -41,12 +41,12 @@ Build for production:
 npm run build
 ```
 
-Run tests:
+Run the test script:
 
 ```bash
-npm test -- --watchAll=false --passWithNoTests
+npm test
 ```
 
 ## Audit Notes
 
-`npm audit --audit-level=critical` currently passes. Remaining non-critical findings are inherited from the Create React App `react-scripts` toolchain and require a build-tool migration rather than a safe patch-level update.
+`npm audit` currently passes with no known vulnerabilities.
